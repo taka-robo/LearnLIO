@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(LearnLIO)
+project(learn_lio)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -9,12 +9,16 @@ project(LearnLIO)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
+  sensor_msgs
+  geometry_msgs
+  nav_msgs
   std_msgs
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen3 REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -103,9 +107,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES LearnLIO
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+ CATKIN_DEPENDS roscpp sensor_msgs std_msgs tf2_ros geometry_msgs nav_msgs
 #  DEPENDS system_lib
 )
 
@@ -116,13 +120,21 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/LearnLIO.cpp
+# )
+add_library(
+  kalman_filter_lib STATIC src/kalman_filter.cpp
+)
+
+# target_include_directories(
+#   kalman_filter_lib PUBLIC include
 # )
 
 ## Add cmake target dependencies of the library
@@ -133,7 +145,11 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/LearnLIO_node.cpp)
+add_executable(
+  ${PROJECT_NAME}_node 
+  src/laser_mapping.cpp
+  # src/kalman_filter.cpp
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -143,12 +159,22 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(
+  ${PROJECT_NAME}_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
+target_compile_options(
+  ${PROJECT_NAME}_node 
+  PRIVATE "-O2"
+)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(
+  ${PROJECT_NAME}_node
+  ${catkin_LIBRARIES}
+  kalman_filter_lib
+)
 
 #############
 ## Install ##
