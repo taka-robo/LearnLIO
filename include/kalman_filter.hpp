@@ -12,9 +12,12 @@ public:
 	KalmanFilter();
 	// ~KalmanFilter();
 	void initialize(const Quatd& q);
-	void predict(const Quatd& U);
+	void filter(const double dt, const double w1, const double w2, const double w3);
+	void predict(const double dt, const double w1, const double w2, const double w3);
 	void update();
 private:
+	Eigen::MatrixXd calcF(const double dt, const double w1, const double w2, const double w3);
+	Eigen::MatrixXd calcH();
 	Quatd X_;//状態ベクトル(姿勢)
 	Quatd X_hat_;//状態ベクトルの推定値(姿勢)
 	Quatd sigma_;
@@ -22,6 +25,8 @@ private:
 	Eigen::MatrixXd F_; // 誤差共分散行列
 	Eigen::MatrixXd P_; // 誤差共分散行列
 	Eigen::MatrixXd Q_; // 誤差共分散行列
+	Eigen::MatrixXd R_; // 誤差共分散行列
+	Eigen::MatrixXd C_; // 誤差共分散行列
 	Eigen::MatrixXd processNoise_; // プロセスノイズ
 	Eigen::MatrixXd measurementNoise_; // 観測ノイズ
 

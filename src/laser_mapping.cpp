@@ -17,9 +17,7 @@ void imuCallBack(const sensor_msgs::Imu::ConstPtr& msg) {
 	const double omega_y = msg->angular_velocity.y;
 	const double omega_z = msg->angular_velocity.z;
 	const double dt = 0.01;
-	Einge::Quaterniond input(1, dt * omega_x / 2., dt * omega_y / 2., dt * omega_z / 2.);
-	kf->stateUpdate(input);
-	kf->predict();
+	kf->filter(dt, omega_x, omega_y, omega_z);
 }
 
 
